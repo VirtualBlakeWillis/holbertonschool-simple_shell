@@ -11,13 +11,14 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+#define MAX_ARGS 32
 extern char **environ;
 
 /* function prototypes */
 int shell(char **argv, int tty);
 
 int command(char *cmd);
-char *prep_string(char *cmd);
+char **prep_string(char *cmd);
 char *is_cmd_exist(char *cmd);
 char *strcpycat(char *dest, char *str);
 

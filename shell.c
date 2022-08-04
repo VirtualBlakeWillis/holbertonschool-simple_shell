@@ -6,19 +6,40 @@
  * @argv: pointer list of args
  * Return: 0
  */
-int main(__attribute__((unused))int ac, char **argv)
+int main(void)
 {
-	int tty = 0;
+	size_t buffsize;
+	char *buff, **args;
+	int tty = 0, weGood = 1;
 
 	tty = isatty(STDIN_FILENO);
-	if (tty == 2)
-	{
-		perror(argv[0]);
-		return (2);
-	}
-	else
-		shell(argv, tty);
 
+	while (weGood)
+	{
+		if (tty == 1)
+			printf("$ ");
+
+		while(getline(&buff, &buffsize, stdin))
+		{
+			args = prep_string(buff);
+
+			while (args)
+			{
+				printf("%s\n", args[0]);
+				args++;
+			}
+			/* prepare arguments for checks */
+
+			/* check builtins */
+
+			/* check path */
+
+			/* execute command (only if found in path? */
+		}
+		weGood = 0;
+
+
+	}
 	return (0);
 }
 /**
@@ -34,21 +55,26 @@ int shell(char **argv, int tty)
 	char *buff = NULL, *tmp = NULL; /**cmd = NULL*/
 	int valid_input = 1;
 
+
 	while (valid_input)
 	{
 		if (tty == 1)
 			printf("$ ");
 
 		valid_input = getline(&buff, &buffsize, stdin);
-		if (_strcmp(buff, "exit\n") == 0)
+		
+		if (valid_input > 0)
 		{
-			break;
-		}
-		tmp = prep_string(buff);
+			printf("buff: %s\n", buff);
+			if (_strcmp(buff, "exit\n") == 0)
+			{
+				break;
+			}
+		/* 	tmp = prep_string(buff);  */
 
-		if (tmp == NULL)
-			perror(argv[0]);
-		/*
+			if (tmp == NULL)
+				perror(argv[0]);
+			/*
 		 *cmd = is_cmd_exist(tmp);
 		 *if (cmd == NULL)
 		 *	perror(argv[0]);
@@ -59,7 +85,8 @@ int shell(char **argv, int tty)
 		 *		free(cmd);
 		 * }
 		*/
-		command(tmp);
+			command(tmp);
+		}
 	}
 	free(buff);
 	buff = NULL;
@@ -72,28 +99,30 @@ int shell(char **argv, int tty)
  * @cmd: command to prep
  * Return: pointer to first char of cmd
  */
-char *prep_string(char *cmd)
+char **prep_string(char *buff)
 {
+	char *args[32], *tok;
 	int i = 0;
+	
+	while (buff[0] == ' ')
+		buff++;
 
-	while (*cmd == ' ')
-		cmd++;
+	tok = strtok(buff, " ");
 
-	for (i = 0; i < _strlen(cmd); i++)
+	while (tok != NULL)
 	{
-		if (cmd[i] == '\n' || cmd[i] == ' ')
-		{
-			cmd[i] = '\0';
-			return (cmd);
-		}
+		args[i] = tok;
+		tok = strtok(buff, " \n");
+		i++;
 	}
-	return (cmd);
+	args[i] = NULL;
+
+	return(args);
 }
 
 /**
  * is_cmd_exist - check if cmd exists in path or current directory
- *
- * @cmd: cmd to check
+ * * @cmd: cmd to check
  * Return: pointer to cmd
  */
 char *is_cmd_exist(char *cmd)
